@@ -519,20 +519,6 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@types/aws-sdk@^2.7.0":
-  version "2.7.0"
-  resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/@types/aws-sdk/-/aws-sdk-2.7.0.tgz#83588b3d14ebdca1d4ce5e023387577568ce82f3"
-  integrity sha1-g1iLPRTr3KHUzl4CM4dXdWjOgvM=
-  dependencies:
-    aws-sdk "*"
-
-"@types/axios@^0.14.0":
-  version "0.14.0"
-  resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/@types/axios/-/axios-0.14.0.tgz#ec2300fbe7d7dddd7eb9d3abf87999964cafce46"
-  integrity sha1-7CMA++fX3d1+udOr+HmZlkyvzkY=
-  dependencies:
-    axios "*"
-
 "@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
   version "7.1.9"
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/@types/babel__core/-/babel__core-7.1.9.tgz#77e59d438522a6fb898fa43dc3455c6e72f3963d"
@@ -570,13 +556,6 @@
   version "1.1.1"
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/@types/color-name/-/color-name-1.1.1.tgz#1c1261bbeaa10a8055bbc5d8ab84b7b2afc846a0"
   integrity sha512-rr+OQyAjxze7GgWrSaJwydHStIhHq2lvY3BOC2Mj7KnzI7XK0Uw1TOOdI9lDoajEbSWLiYgoo4f1R51erQfhPQ==
-
-"@types/commander@^2.12.2":
-  version "2.12.2"
-  resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/@types/commander/-/commander-2.12.2.tgz#183041a23842d4281478fa5d23c5ca78e6fd08ae"
-  integrity sha512-0QEFiR8ljcHp9bAbWxecjVRuAMr16ivPiGOw6KFQBVrVd0RQIcM3xKdRisH2EDWgVWujiYtHwhSkSUoAAGzH7Q==
-  dependencies:
-    commander "*"
 
 "@types/domutils@*":
   version "1.7.3"
@@ -666,13 +645,6 @@
   version "7.0.6"
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/@types/json-schema/-/json-schema-7.0.6.tgz#f4c7ec43e81b319a9815115031709f26987891f0"
   integrity sha512-3c+yGKvVP5Y9TYBEibGNR+kLtijnj7mYrXRg+WpFb2X9xm04g/DXYkfg4hmzJQosc9snFNUPkbYIhu+KAm6jJw==
-
-"@types/keytar@^4.4.2":
-  version "4.4.2"
-  resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/@types/keytar/-/keytar-4.4.2.tgz#49ef917d6cbb4f19241c0ab50cd35097b5729b32"
-  integrity sha512-xtQcDj9ruGnMwvSu1E2BH4SFa5Dv2PvSPd0CKEBLN5hEj/v5YpXJY+B6hAfuKIbvEomD7vJTc/P1s1xPNh2kRw==
-  dependencies:
-    keytar "*"
 
 "@types/minimatch@*":
   version "3.0.3"
@@ -1068,7 +1040,7 @@ atob@^2.1.2:
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-aws-sdk@*, aws-sdk@^2.751.0:
+aws-sdk@^2.751.0:
   version "2.751.0"
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/aws-sdk/-/aws-sdk-2.751.0.tgz#aeab21a5fc1b1f843180a988ff0fb650119dc6ff"
   integrity sha512-0lo7YKTfjEwoP+2vK7F7WGNigvwFxqiM96PzBaseOpOelfhFHPKEJpk2Poa12JI89c8dGoc1PhTQ1TSTJK3ZqQ==
@@ -1106,7 +1078,7 @@ axios-cookiejar-support@^1.0.0:
     is-redirect "^1.0.0"
     pify "^5.0.0"
 
-axios@*, axios@^0.20.0:
+axios@^0.20.0:
   version "0.20.0"
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/axios/-/axios-0.20.0.tgz#057ba30f04884694993a8cd07fa394cff11c50bd"
   integrity sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==
@@ -1707,7 +1679,7 @@ combined-stream@^1.0.5, combined-stream@^1.0.6, combined-stream@~1.0.5, combined
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@*, commander@^6.1.0:
+commander@^6.1.0:
   version "6.1.0"
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/commander/-/commander-6.1.0.tgz#f8d722b78103141006b66f4c7ba1e97315ba75bc"
   integrity sha512-wl7PNrYWd2y5mp1OK/LhTlv8Ff4kQJQRXXAvF+uU/TPNiVJUxZLRYGj/B0y/lPGAVcSbJqH2Za/cvHmrPMC8mA==
@@ -4140,7 +4112,7 @@ jsprim@^1.2.2:
     json-schema "0.2.3"
     verror "1.10.0"
 
-keytar@*, keytar@^6.0.1:
+keytar@^6.0.1:
   version "6.0.1"
   resolved "https://extend-artifacts-619986948913.d.codeartifact.us-east-1.amazonaws.com:443/npm/extend-test/keytar/-/keytar-6.0.1.tgz#996961abdebf300b2d34bb2eab6e42a8096b1ed8"
   integrity sha512-1Ihpf2tdM3sLwGMkYHXYhVC/hx5BDR7CWFL4IrBA3IDZo0xHhS2nM+tU9Y+u/U7okNfbVkwmKsieLkcWRMh93g==
