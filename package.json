@@ -45,7 +45,7 @@
     "keytar": "^6.0.1",
     "shelljs": "^0.8.4",
     "soupselect": "^0.2.0",
-    "tough-cookie": "^4.0.0",
+    "tough-cookie": "^4.0.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.1.0",
