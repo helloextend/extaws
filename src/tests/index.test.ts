@@ -1,6 +1,6 @@
-import { ExtAws } from './index'
+import { ExtAws } from '../lib/extaws'
 import {CookieJar} from 'tough-cookie'
-import { OktaAuthResponse, OktaFactor} from './lib/types'
+import { OktaAuthResponse, OktaFactor } from '../lib/types'
 // eslint-disable-next-line
 const exampleRawB64 = `<!DOCTYPE html>
 <html lang="en">
@@ -258,7 +258,7 @@ const mfaSuccess: OktaAuthResponse = {
   sessionToken: '20111BIZQK-AAAAAAA4x55ChSu9UzpdpozqzXj8oH3kvMV_mr6BBBBB',
   _embedded: {
     user: {
-      id: '00u28eyb6PR7PQZ474x6',
+      id: '011asaseyb6PR7PQZ474x6',
       passwordChanged: '2020-02-17T21:39:44.000Z',
       profile: {
         login: 'tom.jones@not-unusual.com',
@@ -305,7 +305,7 @@ const mfaRequired: OktaAuthResponse = {
       'rememberDeviceLifetimeInMinutes': 0,
       'rememberDeviceByDefault': true,
       'factorsPolicyInfo': {
-        'opf2akkjwKcUCNZi24x6': {
+        'oassuwkjwKcUCNZi24x6': {
           'autoPushEnabled': false
         }
       }
@@ -323,7 +323,7 @@ const mfaRequired: OktaAuthResponse = {
   }
 }
 
-const authReponseWithMissingFactos = {
+const authReponseWithMissingFactors: OktaAuthResponse = {
   status: 'LOCKED_OUT'
 }
 
@@ -357,6 +357,8 @@ describe('ExtAws', () => {
     async function mockedVerify(): Promise<OktaAuthResponse> {
       return mfaSuccess
     }
+    // TODO: Find a way to fix this test so we can mock verifyFactor and extend the class to access protected method
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore-next-line
     jest.spyOn(auth, 'verifyFactor').mockImplementation(mockedVerify)
     await (auth as any).handleMFA(mfaRequired)
@@ -382,14 +384,14 @@ describe('ExtAws', () => {
     test( 'should properly handle missing factors', () => {
       async function func() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (auth as any).handleMFA(authReponseWithMissingFactos)
+        await (auth as any).handleMFA(authReponseWithMissingFactors)
       }
       expect(func).rejects.toEqual(Error('Unable to find factors in auth response'))
     })
     test( 'should properly error when auth response is missing factors', () => {
       async function func() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (auth as any).handleMFA(authReponseWithMissingFactos)
+        await (auth as any).handleMFA(authReponseWithMissingFactors)
       }
       expect(func).rejects.toEqual(Error('Unable to find factors in auth response'))
     })

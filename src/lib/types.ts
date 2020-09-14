@@ -44,16 +44,16 @@ type OktaAuthStatus =
     | 'MFA_CHALLENGE'
     | 'SUCCESS'
 
-export const CONFIG_PROMPT = [[
+export const CONFIG_PROMPT = [
   {
     name: 'oktaOrgName',
     type: 'input',
-    message: 'Okta Organization Name',
+    message: 'Okta Organization Name:',
   },
   {
     name: 'oktaSamlUrl',
     type: 'input',
-    message: 'Okta SAML Url: ',
+    message: 'Okta SAML Url:',
   },
   {
     name: 'saveCreds',
@@ -63,26 +63,26 @@ export const CONFIG_PROMPT = [[
   {
     name: 'defaultProfile',
     type: 'input',
-    message: 'AWS Profile to store credentials: ',
+    message: 'AWS Profile to store credentials:',
     default: 'default',
   },
   {
     name: 'awsRegion',
     type: 'input',
-    message: 'AWS Region: ',
+    message: 'AWS Region:',
     default: 'us-east-1'
   }
-]]
+]
 
 export const USER_PASS_PROMPT = [{
   name: 'username',
   type: 'input',
-  message: 'Okta Username',
+  message: 'Okta Username:',
 },
 {
   name: 'password',
   type: 'password',
-  message: 'Okta Password'
+  message: 'Okta Password:'
 }]
 
 

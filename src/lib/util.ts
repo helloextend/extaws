@@ -4,6 +4,8 @@ import {homedir} from 'os'
 import { exec } from 'shelljs'
 import {STS} from 'aws-sdk'
 
+export const forwardSlashRegEx = /^([^/])/i
+
 export const USER_HOME_DIR = homedir()
 export const AWS_BASE = `${USER_HOME_DIR}/.aws`
 export const AWS_CONFIG_FILE = `${AWS_BASE}/config`

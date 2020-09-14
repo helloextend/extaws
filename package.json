@@ -1,8 +1,11 @@
 {
   "name": "extaws",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Extend Okta Aws Authentication",
-  "main": "dist/bundle.js",
+  "main": "dist/index.js",
+  "bin": {
+    "extaws": "dist/index.js"
+  },
   "repository": "git@github.com:helloextend/extaws.git",
   "author": "Corey Ryan <corey@extend.com>",
   "license": "MIT",
@@ -14,21 +17,18 @@
     "build:js": "tsc",
     "build:test": "webpack --display-error-details",
     "build": "yarn run build:types && yarn run build:js",
-    "prepublish": "yarn build",
+    "prepublish": "yarn clean && yarn build",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watchAll",
-    "clean": "rm -rf coverage dist"
+    "clean": "rm -rf coverage dist",
+    "start": "node --no-deprecation -r ts-node/register src/index.ts"
   },
   "dependencies": {
-    "@types/aws-sdk": "^2.7.0",
-    "@types/axios": "^0.14.0",
-    "@types/commander": "^2.12.2",
     "@types/elementtree": "^0.1.0",
     "@types/htmlparser2": "^3.10.2",
     "@types/ini": "^1.3.30",
     "@types/inquirer": "^7.3.1",
     "@types/jest": "^26.0.13",
-    "@types/keytar": "^4.4.2",
     "@types/node": "^14.10.1",
     "@types/shelljs": "^0.8.8",
     "@types/tough-cookie": "^4.0.0",
@@ -41,19 +41,20 @@
     "htmlparser2": "^4.1.0",
     "ini": "^1.3.5",
     "inquirer": "^7.3.3",
-    "jest": "^26.4.2",
     "keytar": "^6.0.1",
     "npx": "^10.2.2",
+    "prettier": "^2.1.1",
     "shelljs": "^0.8.4",
     "soupselect": "^0.2.0",
     "tough-cookie": "^4.0.0",
-    "ts-jest": "^26.3.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.1.0",
     "@typescript-eslint/parser": "^4.1.0",
-    "eslint": "^7.8.1"
+    "eslint": "^7.8.1",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.3.0"
   }
 }
