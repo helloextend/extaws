@@ -12,10 +12,6 @@ export interface OktaAuth {
     }
 }
 
-export interface StateToken {
-    stateToken: string
-}
-
 export interface  FactorType {
     id: string
     stateToken: string
@@ -28,7 +24,7 @@ export interface STSAssumeRole {
 
 export interface Config {
     oktaOrgName: string
-    oktaUrl: string
+    oktaSamlUrl: string
     saveCreds: boolean
     defaultProfile: string
     awsRegion: string
@@ -48,15 +44,59 @@ type OktaAuthStatus =
     | 'MFA_CHALLENGE'
     | 'SUCCESS'
 
+export const CONFIG_PROMPT = [[
+  {
+    name: 'oktaOrgName',
+    type: 'input',
+    message: 'Okta Organization Name',
+  },
+  {
+    name: 'oktaSamlUrl',
+    type: 'input',
+    message: 'Okta SAML Url: ',
+  },
+  {
+    name: 'saveCreds',
+    type: 'confirm',
+    message: 'Store Okta Credentials'
+  },
+  {
+    name: 'defaultProfile',
+    type: 'input',
+    message: 'AWS Profile to store credentials: ',
+    default: 'default',
+  },
+  {
+    name: 'awsRegion',
+    type: 'input',
+    message: 'AWS Region: ',
+    default: 'us-east-1'
+  }
+]]
+
+export const USER_PASS_PROMPT = [{
+  name: 'username',
+  type: 'input',
+  message: 'Okta Username',
+},
+{
+  name: 'password',
+  type: 'password',
+  message: 'Okta Password'
+}]
+
+
 export type OktaFactor = {
     id: string
     factorType: string
     provider: string
     vendorName: string
     profile: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any
     }
     _links: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key: string]: any
     }
 }
@@ -85,6 +125,7 @@ interface OktaEmbedded {
         allowRememberDevice: boolean
         rememberDeviceByDefault: boolean
         rememberDeviceLifetimeInMinutes: number
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         [key:string]: any
     }
 }
@@ -95,14 +136,10 @@ export interface OktaAuthResponse {
     expiresAt?: string
     status: OktaAuthStatus
     _embedded?: OktaEmbedded
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _links?: any
 }
 
 export interface FactorInquire {
     factor: string
-}
-
-export interface OktaFactorAuthResponse extends OktaAuthResponse {
-    factorResult: string
-    challengeType: string
 }

@@ -17,7 +17,7 @@
     "prepublish": "yarn build",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watchAll",
-    "clean": "rm -rf coverage dist/**/*"
+    "clean": "rm -rf coverage dist"
   },
   "dependencies": {
     "@types/aws-sdk": "^2.7.0",
