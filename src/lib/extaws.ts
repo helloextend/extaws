@@ -7,9 +7,8 @@ import * as et from 'elementtree'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Package has no types
 import * as soup from 'soupselect'
-import {forwardSlashRegEx, sleep, writeAwsProfile} from './util'
-import { CONFIG_PROMPT, USER_PASS_PROMPT } from './types'
-import type {
+import {sleep, writeAwsProfile, forwardSlashRegEx } from './util'
+import {
   Config,
   Credentials,
   FactorInquire,
@@ -18,6 +17,7 @@ import type {
   OktaAuthResponse,
   OktaFactor,
   STSAssumeRole,
+  USER_PASS_PROMPT
 } from './types'
 import {prompt, QuestionCollection} from 'inquirer'
 import * as keytar from 'keytar'
@@ -86,22 +86,27 @@ export class ExtAws {
         const factor = await ExtAws.selectToken(authResponse._embedded.factors)
         let counter = 0
         let verify: OktaAuthResponse | AxiosError
+        console.log('Polling for MFA success')
         do {
           verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken})
           if (!('status' in verify)) {
             throw new Error(verify.message)
           }
-          counter++
-          if (verify.status !== 'SUCCESS') sleep(1000)
+          if (verify.status !== 'SUCCESS') await sleep(1000)
           if (counter > 30) {
             console.log('Timing out after thirty seconds')
-            console.log(verify.status)
+            console.log(`Auth State: ${verify.status}`)
+            process.exit(1)
           }
+          counter++
         } while(verify.status !== 'SUCCESS' && verify.stateToken)
+
         if (!verify.sessionToken) {
           throw new Error('No session token in response')
         }
+
         this.sessionToken = verify.sessionToken
+
       } else {
         throw new Error('Unable to find factors in auth response')
       }
@@ -171,12 +176,101 @@ export class ExtAws {
     * Handles prompting the user for necessary configuration information and returns it
      * @returns Config
     */
-    static async promptForConfig(): Promise<Config> {
-      const config = await ExtAws.inquire<Config>(CONFIG_PROMPT)
-      if(config.oktaSamlUrl.match(forwardSlashRegEx)) {
-        config.oktaSamlUrl = `/${config.oktaSamlUrl}`
+    static async promptForConfig(
+      inputOktaOrgName?: string,
+      inputOktaSamlUrl?: string,
+      inputSaveCreds?: boolean,
+      inputDefaultProfile?: string,
+      inputDuration?: number,
+      inputAwsRegion?: string
+    ): Promise<Config> {
+      let oktaOrgName: string
+      if (!inputOktaOrgName) {
+        const { promptOktaOrgName } = await ExtAws.inquire({
+          name: 'promptOktaOrgName',
+          type: 'input',
+          message: 'Okta Organization Name:',
+        })
+        oktaOrgName = promptOktaOrgName
+      } else {
+        oktaOrgName = inputOktaOrgName
       }
-      return config
+
+      let oktaSamlUrl: string
+      if (!inputOktaSamlUrl) {
+        const { promptOktaSamlUrl } = await ExtAws.inquire({
+          name: 'promptOktaSamlUrl',
+          type: 'input',
+          message: 'Okta SAML Url:',
+        })
+        oktaSamlUrl = promptOktaSamlUrl
+      } else {
+        oktaSamlUrl = inputOktaSamlUrl
+      }
+
+      let saveCreds: boolean
+      if (!inputSaveCreds) {
+        const { promptSaveCreds } = await ExtAws.inquire({
+          name: 'promptSaveCreds',
+          type: 'confirm',
+          message: 'Store Okta Credentials'
+        })
+        saveCreds = promptSaveCreds
+      } else {
+        saveCreds = inputSaveCreds
+      }
+
+      let defaultProfile: string
+      if (!inputDefaultProfile) {
+        const { promptDefaultProfile } = await ExtAws.inquire({
+          name: 'promptDefaultProfile',
+          type: 'input',
+          message: 'AWS Profile to store credentials:',
+          default: 'default',
+        })
+        defaultProfile = promptDefaultProfile
+      } else {
+        defaultProfile = inputDefaultProfile
+      }
+
+      let duration: number
+      if (!inputDuration) {
+        const { promptDuration } = await ExtAws.inquire({
+          name: 'promptDuration',
+          type: 'number',
+          message: 'Default credential duration (in seconds):',
+          default: 43200,
+        })
+        duration = promptDuration
+      } else {
+        duration = inputDuration
+      }
+
+      let awsRegion: string
+      if (!inputAwsRegion) {
+        const { promptAwsRegion } = await ExtAws.inquire({
+          name: 'promptAwsRegion',
+          type: 'input',
+          message: 'AWS Region:',
+          default: 'us-east-1'
+        })
+        awsRegion = promptAwsRegion
+      } else {
+        awsRegion = inputAwsRegion
+      }
+
+      if(oktaSamlUrl.match(forwardSlashRegEx)) {
+        oktaSamlUrl = `/${oktaSamlUrl}`
+      }
+
+      return {
+        oktaOrgName,
+        oktaSamlUrl,
+        saveCreds,
+        defaultProfile,
+        duration,
+        awsRegion
+      }
     }
 
     /**
@@ -184,7 +278,7 @@ export class ExtAws {
      * It will then attempt to store the data for future use
      * @returns Object with configuration for Okta and user details
      */
-    async getConfig(): Promise<Config | null> {
+    static async getConfig(): Promise<Config | null> {
       const storedConfig = await keytar.getPassword('extaws', 'config')
       let config: Config
       if (!storedConfig) {
@@ -215,14 +309,18 @@ export class ExtAws {
      * Main method for logging a user into AWS via Okta. Will log a user in and write credentials to aws profile
      * @returns AWS Credentials
      */
-    async login(): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
-      const configResult = await this.getConfig()
+    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
+      const configResult = await ExtAws.getConfig()
       if (configResult === null ) {
         this.config = await ExtAws.promptForConfig()
         await ExtAws.setConfig(this.config)
       } else {
         this.config = configResult
       }
+
+      const awsRoleDuration = ( props?.duration || this.config.duration ) || 43200
+      const awsProfile = ( props?.profile || this.config.defaultProfile ) || 'default'
+      const awsRegion = ( props?.region || this.config.awsRegion ) || 'us-east-1'
 
       this.createAxiosClient()
 
@@ -255,10 +353,26 @@ export class ExtAws {
       await this.getSamlHtml(this.config.oktaSamlUrl)
       await this.parseAssertionFromHtml()
       const roles = await this.parseRolesFromXML()
-      const userRole = await ExtAws.selectRole(roles)
-      const creds = await this.assumeRole(userRole)
+
+      let userRole: STSAssumeRole
+      if (props?.role)  {
+        const needle = props.role // TODO - Fix this. Compiler was being weird about props.role being undefined in the filter
+        const searchResult = roles.filter(stsRole => {
+          return (~stsRole.role.indexOf(needle))
+        })[0]
+        if (searchResult !== undefined) {
+          userRole = searchResult
+        } else {
+          console.log(`Provided role(${props.role}) was not found. Please select from roles found`)
+          userRole = await ExtAws.selectRole(roles)
+        }
+      } else {
+        userRole = await ExtAws.selectRole(roles)
+      }
+
+      const creds = await this.assumeRole(userRole, awsRoleDuration)
       if (!creds.Credentials) throw new Error('Error during role assumption')
-      await writeAwsProfile(this.config.defaultProfile, this.config.awsRegion, creds.Credentials)
+      await writeAwsProfile(awsProfile, awsRegion, creds.Credentials)
       return creds
     }
 
@@ -440,18 +554,18 @@ export class ExtAws {
 
     /**
      * Assumes the AWS role with the SAML assertion
-     * @param oktaRole
+     * @param role - Principal and target role ARN
+     * @param duration - Optional duration for credentials expiration
      *
      * @returns AWS Credentials
      */
-    private async assumeRole(oktaRole: STSAssumeRole): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
-      const params = {
-        PrincipalArn: oktaRole.principal,
-        RoleArn: oktaRole.role,
+    private async assumeRole(role: STSAssumeRole, duration?: number): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
+      return await this.sts.assumeRoleWithSAML({
+        PrincipalArn: role.principal,
+        RoleArn: role.role,
         SAMLAssertion: this.b64Assertion,
-        DurationSeconds: 3600,
-      }
-      return await this.sts.assumeRoleWithSAML(params).promise()
+        DurationSeconds: duration || 43200,
+      }).promise()
     }
 
     /**
@@ -463,6 +577,7 @@ export class ExtAws {
         saveCreds: true,
         defaultProfile: 'default',
         awsRegion: 'us-east-1',
+        duration: 43200,
       }
       let config = {
         ...defaults,
@@ -480,6 +595,12 @@ export class ExtAws {
         config = {
           ...config,
           awsRegion: newConfig.awsRegion
+        }
+      }
+      if (newConfig.duration) {
+        config = {
+          ...config,
+          duration: newConfig.duration
         }
       }
       await this.localSecrets('SET', 'extaws', 'config', config)

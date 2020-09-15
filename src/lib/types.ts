@@ -27,6 +27,7 @@ export interface Config {
     oktaSamlUrl: string
     saveCreds: boolean
     defaultProfile: string
+    duration: number
     awsRegion: string
 }
 
@@ -65,6 +66,12 @@ export const CONFIG_PROMPT = [
     type: 'input',
     message: 'AWS Profile to store credentials:',
     default: 'default',
+  },
+  {
+    name: 'duration',
+    type: 'number',
+    message: 'Default credential duration (in seconds):',
+    default: 43200,
   },
   {
     name: 'awsRegion',
