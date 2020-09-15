@@ -2,9 +2,13 @@
 
 Typescript package that attempts to solve the problem of getting AWS CLI credentials when using Okta/AWS Saml integration.
 
-It can be used as a CLI command or use the class methods to build additional functionality.
+It was written to be used as both a stand alone CLI for simple use cases or as a utility to build more complex/custom use cases.
 
-Configuration and credentials are stored using the [keytar](https://www.npmjs.com/package/keytar) package which abstracts Windows(Credential Vault)/Mac(Keychain)/Linux(libsecret) secret storage systems
+Configuration and credentials are stored using the [keytar](https://www.npmjs.com/package/keytar) package which abstracts Windows(Credential Vault)/Mac(Keychain)/Linux(libsecret) secret storage systems. 
+
+## Usage
+
+Before you can use this tooling you will need both your Okta organization name(->YourOrgName<-.okta.com) as well as the Okta Saml URL. It'll look something like: `home/amazon_aws/01234abcde9876549/123`
 
 ###CLI
 
