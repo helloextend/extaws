@@ -4,6 +4,10 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
+## [0.0.8] - 2020-09-17
+
+### Added 
+
 - Added the ability to pass a role to the login CLI command
 - Improvements to the overall flow to setting config
 - Writing credentials will now completely replace the profile section. This is to ensure that any extra keys that may exist are removed. Notable `aws_security_token`
