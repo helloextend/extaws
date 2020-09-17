@@ -6,11 +6,12 @@ program
   .option('-p, --profile <profileName>', 'Name of the AWS Profile to use')
   .option('-d --duration <durationSeconds>', 'Print a link rather than open a browser session', '43200')
   .option('-r --region <awsRegion>', 'Region to set as default for the profile')
+  .option('-l --role <roleName>', 'Role to pick from SAML assertion. Prompts if not found')
   .parse(process.argv)
 
-async function login(profile?: string | undefined, duration?: number | undefined, region?: string | undefined) {
+async function login(profile?: string | undefined, duration?: number | undefined, region?: string | undefined, role?: string | undefined) {
   const extaws = new ExtAws()
-  extaws.login({profile, duration, region})
+  extaws.login({profile, duration, region, role})
     .catch(e => console.error(e))
 }
 
@@ -23,5 +24,5 @@ if (program.duration) {
   }
 }
 
-login(program.profile, duration, program.region)
+login(program.profile, duration, program.region, program.role)
 

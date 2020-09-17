@@ -7,7 +7,7 @@ import * as et from 'elementtree'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - Package has no types
 import * as soup from 'soupselect'
-import {sleep, writeAwsProfile, forwardSlashRegEx } from './util'
+import {sleep, writeAwsCredentials, forwardSlashRegEx, writeAwsConfig} from './util'
 import {
   Config,
   Credentials,
@@ -264,9 +264,11 @@ export class ExtAws {
       }
 
       return {
-        oktaOrgName,
-        oktaSamlUrl,
-        saveCreds,
+        extaws: {
+          oktaOrgName,
+          oktaSamlUrl,
+          saveCreds,
+        },
         defaultProfile,
         duration,
         awsRegion
@@ -295,7 +297,7 @@ export class ExtAws {
     createAxiosClient(): void {
       this.client = axios.create({
         withCredentials: true,
-        baseURL: `https://${this.config.oktaOrgName}.okta.com`,
+        baseURL: `https://${this.config.extaws.oktaOrgName}.okta.com`,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -321,6 +323,7 @@ export class ExtAws {
       const awsRoleDuration = ( props?.duration || this.config.duration ) || 43200
       const awsProfile = ( props?.profile || this.config.defaultProfile ) || 'default'
       const awsRegion = ( props?.region || this.config.awsRegion ) || 'us-east-1'
+      writeAwsConfig(awsProfile, awsRegion)
 
       this.createAxiosClient()
 
@@ -330,7 +333,7 @@ export class ExtAws {
       const authResponse = await this.oktaLogin(credentials)
       if (!('status' in authResponse)) throw new Error(`Error during login: ${authResponse.message}`)
 
-      if (this.config.saveCreds) await ExtAws.localSecrets('SET', 'extaws', 'okta', credentials)
+      if (this.config.extaws.saveCreds) await ExtAws.localSecrets('SET', 'extaws', 'okta', credentials)
 
       switch(authResponse.status) {
       case 'SUCCESS':
@@ -350,7 +353,7 @@ export class ExtAws {
       }
 
       await this.getSessionCookie()
-      await this.getSamlHtml(this.config.oktaSamlUrl)
+      await this.getSamlHtml(this.config.extaws.oktaSamlUrl)
       await this.parseAssertionFromHtml()
       const roles = await this.parseRolesFromXML()
 
@@ -372,7 +375,8 @@ export class ExtAws {
 
       const creds = await this.assumeRole(userRole, awsRoleDuration)
       if (!creds.Credentials) throw new Error('Error during role assumption')
-      await writeAwsProfile(awsProfile, awsRegion, creds.Credentials)
+
+      writeAwsCredentials(awsProfile, creds.Credentials)
       return creds
     }
 
@@ -457,7 +461,7 @@ export class ExtAws {
         return await this.client.get('/login/sessionCookieRedirect', {
           params: {
             token: this.sessionToken,
-            redirectUrl: `https://${this.config.oktaOrgName}.okta.com${this.config.oktaSamlUrl}`
+            redirectUrl: `https://${this.config.extaws.oktaOrgName}.okta.com${this.config.extaws.oktaSamlUrl}`
           }}
         )
       } catch (err) {
@@ -579,30 +583,18 @@ export class ExtAws {
         awsRegion: 'us-east-1',
         duration: 43200,
       }
-      let config = {
-        ...defaults,
-        oktaOrgName: newConfig.oktaOrgName,
-        oktaSamlUrl: newConfig.oktaSamlUrl,
-        saveCreds: newConfig.saveCreds,
-      }
-      if (newConfig.defaultProfile) {
-        config = {
-          ...config,
-          defaultProfile: newConfig.defaultProfile,
+
+      const config: Config = {
+        defaultProfile: newConfig.defaultProfile || defaults.defaultProfile,
+        awsRegion: newConfig.awsRegion || defaults.awsRegion,
+        duration: newConfig.duration || defaults.duration,
+        extaws: {
+          oktaOrgName: newConfig.extaws.oktaOrgName,
+          oktaSamlUrl: newConfig.extaws.oktaSamlUrl,
+          saveCreds: newConfig.extaws.saveCreds,
         }
       }
-      if (newConfig.awsRegion) {
-        config = {
-          ...config,
-          awsRegion: newConfig.awsRegion
-        }
-      }
-      if (newConfig.duration) {
-        config = {
-          ...config,
-          duration: newConfig.duration
-        }
-      }
+
       await this.localSecrets('SET', 'extaws', 'config', config)
     }
 
