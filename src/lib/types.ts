@@ -23,12 +23,14 @@ export interface STSAssumeRole {
 }
 
 export interface Config {
+  defaultProfile: string
+  duration: number
+  awsRegion: string
+  extaws: {
     oktaOrgName: string
     oktaSamlUrl: string
     saveCreds: boolean
-    defaultProfile: string
-    duration: number
-    awsRegion: string
+  }
 }
 
 // https://developer.okta.com/docs/reference/api/authn/#transaction-state
