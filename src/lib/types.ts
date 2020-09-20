@@ -22,7 +22,7 @@ export interface STSAssumeRole {
     role: string
 }
 
-export interface Config {
+export interface ExtAwsUserConfig {
   defaultProfile: string
   duration: number
   awsRegion: string

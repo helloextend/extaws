@@ -4,12 +4,10 @@ import axiosCookieJarSupport from 'axios-cookiejar-support'
 import * as htmlparser from 'htmlparser2'
 import {STS} from 'aws-sdk'
 import * as et from 'elementtree'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - Package has no types
-import * as soup from 'soupselect'
+import * as soup from './soup'
 import {sleep, writeAwsCredentials, forwardSlashRegEx, writeAwsConfig} from './util'
 import {
-  Config,
+  ExtAwsUserConfig,
   Credentials,
   FactorInquire,
   FactorType,
@@ -31,7 +29,7 @@ export class ExtAws {
     client: AxiosInstance
     sts: STS
     sessionToken: string
-    config: Config
+    config: ExtAwsUserConfig
 
     constructor() {
       this.assertion = ''
@@ -42,7 +40,7 @@ export class ExtAws {
       this.sts = new STS()
       this.sessionToken = ''
       this.client = {} as AxiosInstance
-      this.config = {} as Config
+      this.config = {} as ExtAwsUserConfig
     }
 
     /**
@@ -174,7 +172,7 @@ export class ExtAws {
 
     /**
     * Handles prompting the user for necessary configuration information and returns it
-     * @returns Config
+     * @returns ExtAwsUserConfig
     */
     static async promptForConfig(
       inputOktaOrgName?: string,
@@ -183,7 +181,7 @@ export class ExtAws {
       inputDefaultProfile?: string,
       inputDuration?: number,
       inputAwsRegion?: string
-    ): Promise<Config> {
+    ): Promise<ExtAwsUserConfig> {
       let oktaOrgName: string
       if (!inputOktaOrgName) {
         const { promptOktaOrgName } = await ExtAws.inquire({
@@ -280,9 +278,9 @@ export class ExtAws {
      * It will then attempt to store the data for future use
      * @returns Object with configuration for Okta and user details
      */
-    static async getConfig(): Promise<Config | null> {
+    static async getConfig(): Promise<ExtAwsUserConfig | null> {
       const storedConfig = await keytar.getPassword('extaws', 'config')
-      let config: Config
+      let config: ExtAwsUserConfig
       if (!storedConfig) {
         return null
       } else {
@@ -576,7 +574,7 @@ export class ExtAws {
      * Sets the config based on defaults and values provided
      * @param newConfig
      */
-    static async setConfig(newConfig: Config): Promise<void> {
+    static async setConfig(newConfig: ExtAwsUserConfig): Promise<void> {
       const defaults = {
         saveCreds: true,
         defaultProfile: 'default',
@@ -584,7 +582,7 @@ export class ExtAws {
         duration: 43200,
       }
 
-      const config: Config = {
+      const config: ExtAwsUserConfig = {
         defaultProfile: newConfig.defaultProfile || defaults.defaultProfile,
         awsRegion: newConfig.awsRegion || defaults.awsRegion,
         duration: newConfig.duration || defaults.duration,
