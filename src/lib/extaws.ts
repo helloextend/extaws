@@ -19,6 +19,9 @@ import {
 } from './types'
 import {prompt, QuestionCollection} from 'inquirer'
 import * as keytar from 'keytar'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const ora = require('ora')
+import type { Ora } from 'ora'
 
 export class ExtAws {
     assertion: string
@@ -79,12 +82,13 @@ export class ExtAws {
      *
      * @returns nothing
      */
-    protected async handleMFA(authResponse: OktaAuthResponse): Promise<void | never> {
+    protected async handleMFA(authResponse: OktaAuthResponse, spinner?: Ora): Promise<void | never> {
       if ((authResponse._embedded?.factors !== undefined && authResponse.stateToken !== undefined)) {
+        if (spinner) spinner.stop()
         const factor = await ExtAws.selectToken(authResponse._embedded.factors)
         let counter = 0
         let verify: OktaAuthResponse | AxiosError
-        console.log('Polling for MFA success')
+        if (spinner) spinner.start('Polling for MFA...')
         do {
           verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken})
           if (!('status' in verify)) {
@@ -136,11 +140,13 @@ export class ExtAws {
      * Returns the stored credentials, if any, and prompts the user if not present. Also generates a device token
      * @returns Username, password, and device token
      */
-    private async getCredentials(): Promise<Credentials | null> {
+    private async getCredentials(spinner?: Ora): Promise<Credentials | null> {
       const savedCreds = await ExtAws.localSecrets('GET', 'extaws', 'okta')
       let credentials = null
       if (!savedCreds) {
+        if (spinner) spinner.stop()
         const { username, password } = await ExtAws.inquire<Credentials>(USER_PASS_PROMPT)
+        if (spinner) spinner.start()
         const deviceToken = this.generateDeviceToken(32)
         credentials = { username, password, deviceToken }
       } else {
@@ -161,11 +167,9 @@ export class ExtAws {
     static async clearCredentials(options?: { config?: boolean, credentials?: boolean}): Promise<boolean> {
       if (options?.credentials) {
         ExtAws.localSecrets('DELETE', 'extaws', 'okta')
-        console.log('Credentials cleared')
       }
       if (options?.config) {
         ExtAws.localSecrets('DELETE','extaws', 'config')
-        console.log('Configuration cleared')
       }
       return true
     }
@@ -309,13 +313,22 @@ export class ExtAws {
      * Main method for logging a user into AWS via Okta. Will log a user in and write credentials to aws profile
      * @returns AWS Credentials
      */
-    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
+    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }, inputSpinner?: Ora): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
       const configResult = await ExtAws.getConfig()
       if (configResult === null ) {
-        this.config = await ExtAws.promptForConfig()
-        await ExtAws.setConfig(this.config)
+        throw new Error('Missing configuration. Please `init`')
+        // this.config = await ExtAws.promptForConfig()
+        // await ExtAws.setConfig(this.config)
       } else {
         this.config = configResult
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      let spinner: Ora
+      if (!inputSpinner) {
+        spinner = ora('Logging in...').start()
+      } else {
+        spinner = inputSpinner
       }
 
       const awsRoleDuration = ( props?.duration || this.config.duration ) || 43200
@@ -325,7 +338,7 @@ export class ExtAws {
 
       this.createAxiosClient()
 
-      const credentials = await this.getCredentials()
+      const credentials = await this.getCredentials(spinner)
       if (!credentials) throw new Error('Error retrieving stored credentials')
 
       const authResponse = await this.oktaLogin(credentials)
@@ -341,10 +354,10 @@ export class ExtAws {
         this.sessionToken = authResponse.sessionToken
         break
       case 'MFA_REQUIRED':
-        await this.handleMFA(authResponse)
+        await this.handleMFA(authResponse, spinner)
         break
       case 'MFA_CHALLENGE':
-        await this.handleMFA(authResponse)
+        await this.handleMFA(authResponse, spinner)
         break
       default:
         throw new Error(`Unable to handle state: ${authResponse.status}`)
@@ -357,24 +370,33 @@ export class ExtAws {
 
       let userRole: STSAssumeRole
       if (props?.role)  {
-        const needle = props.role // TODO - Fix this. Compiler was being weird about props.role being undefined in the filter
+        const needle = props.role
         const searchResult = roles.filter(stsRole => {
           return (~stsRole.role.indexOf(needle))
         })[0]
         if (searchResult !== undefined) {
           userRole = searchResult
         } else {
-          console.log(`Provided role(${props.role}) was not found. Please select from roles found`)
+          spinner.text = `Provided role(${props.role}) was not found. Please select from roles found`
+          spinner.stop()
           userRole = await ExtAws.selectRole(roles)
+          spinner.start('Logging in...')
         }
       } else {
+        spinner.stop()
         userRole = await ExtAws.selectRole(roles)
+        spinner.start('Logging in...')
       }
 
       const creds = await this.assumeRole(userRole, awsRoleDuration)
       if (!creds.Credentials) throw new Error('Error during role assumption')
 
       writeAwsCredentials(awsProfile, creds.Credentials)
+      if (!inputSpinner) {
+        spinner.stop()
+      } else {
+        spinner.stop()
+      }
       return creds
     }
 
