@@ -4,6 +4,12 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
+## [0.0.10] - 2020-09-21
+
+### Added
+
+- Now will use ora, or a passed in object to keep status for the login process
+
 ## [0.0.8] - 2020-09-17
 
 ### Added 
