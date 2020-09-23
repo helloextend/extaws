@@ -4,6 +4,10 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
+## [0.0.12] - 2020-09-23
+
+- Fix yarn.lock registry references
+
 ## [0.0.11] - 2020-09-23
 
 ### Added
