@@ -33,6 +33,13 @@ export interface ExtAwsUserConfig {
   }
 }
 
+export type FactorDevice = 'token:software:totp' | 'push'
+
+export type FactorSelect = {
+    factor: string,
+    type: FactorDevice,
+}
+
 // https://developer.okta.com/docs/reference/api/authn/#transaction-state
 type OktaAuthStatus =
     | 'LOCKED_OUT'

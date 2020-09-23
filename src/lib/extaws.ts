@@ -15,7 +15,8 @@ import {
   OktaAuthResponse,
   OktaFactor,
   STSAssumeRole,
-  USER_PASS_PROMPT
+  FactorSelect,
+  USER_PASS_PROMPT, FactorDevice,
 } from './types'
 import {prompt, QuestionCollection} from 'inquirer'
 import * as keytar from 'keytar'
@@ -60,12 +61,18 @@ export class ExtAws {
      *
      * @returns Okta ID of the selected factor
      */
-    private static async selectToken(factors: OktaFactor[]): Promise<string> {
+    private static async selectToken(factors: OktaFactor[]): Promise<FactorSelect> {
       if (factors.length === 0) throw new Error('No factors provided')
-      if (factors.length === 1) return factors[0].id
+      if (factors.length === 1) {
+        const factorType = factors[0].factorType as unknown
+        return { factor: factors[0].id, type: factorType as FactorDevice }
+      }
+
+      const factorTypeMap: {[key:string]: FactorDevice} = {}
       const factorList = factors.map( factor => {
-        const name = factor.profile.name || factor.factorType
-        return { name, value: factor.id}
+        const name = factor.profile.name || `${factor.factorType} = ${factor.provider}`
+        factorTypeMap[factor.id] = factor.factorType as unknown as FactorDevice
+        return { name, value: factor.id }
       })
       const { factor } = await ExtAws.inquire<FactorInquire>([{
         name: 'factor',
@@ -73,24 +80,36 @@ export class ExtAws {
         message: 'Please select MFA factor',
         choices: factorList,
       }])
-      return factor
+      return { factor, type: factorTypeMap[factor] }
     }
 
     /**
      * Function that handles processing MFA when required
      * @param authResponse - The response body from the Okta authentication call
+     * @param spinner - Optional spinner to continue state during login
      *
      * @returns nothing
      */
     protected async handleMFA(authResponse: OktaAuthResponse, spinner?: Ora): Promise<void | never> {
       if ((authResponse._embedded?.factors !== undefined && authResponse.stateToken !== undefined)) {
         if (spinner) spinner.stop()
-        const factor = await ExtAws.selectToken(authResponse._embedded.factors)
+        const { factor, type } = await ExtAws.selectToken(authResponse._embedded.factors)
         let counter = 0
         let verify: OktaAuthResponse | AxiosError
-        if (spinner) spinner.start('Polling for MFA...')
+        let totpPrompt: string | undefined = undefined
+        if (type === 'push') {
+          spinner?.start('Polling for push verification...')
+        } else if ( type === 'token:software:totp' ) {
+          spinner?.stop()
+          ;({ totpPrompt } = await ExtAws.inquire({
+            name: 'totpPrompt',
+            type: 'input',
+            message: 'OTP Code:',
+          }))
+          spinner?.start('Logging in...')
+        }
         do {
-          verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken})
+          verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken}, totpPrompt)
           if (!('status' in verify)) {
             throw new Error(verify.message)
           }
@@ -166,10 +185,10 @@ export class ExtAws {
      */
     static async clearCredentials(options?: { config?: boolean, credentials?: boolean}): Promise<boolean> {
       if (options?.credentials) {
-        ExtAws.localSecrets('DELETE', 'extaws', 'okta')
+        await ExtAws.localSecrets('DELETE', 'extaws', 'okta')
       }
       if (options?.config) {
-        ExtAws.localSecrets('DELETE','extaws', 'config')
+        await ExtAws.localSecrets('DELETE','extaws', 'config')
       }
       return true
     }
@@ -456,14 +475,15 @@ export class ExtAws {
     /**
      * Makes the factors api call to initiate the MFA process when necessary
      * @param factor
+     * @param mfaCode - Code to be passed if using topt
      *
      * @returns Auth response object from Okta or the error during the request
      */
-    protected async verifyFactor(factor: FactorType): Promise<OktaAuthResponse | AxiosError> {
+    protected async verifyFactor(factor: FactorType, mfaCode?: string | undefined): Promise<OktaAuthResponse | AxiosError> {
       try {
         const res = await this.client.post<OktaAuthResponse>(
           `/api/v1/authn/factors/${factor.id}/verify`,
-          { stateToken: factor.stateToken})
+          { passCode: mfaCode, stateToken: factor.stateToken })
         return res.data
       } catch (err) {
         if (err && err.response) {
