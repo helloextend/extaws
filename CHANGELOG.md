@@ -4,6 +4,12 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
+## [0.0.11] - 2020-09-23
+
+### Added
+
+- Support for OTP(Google Authenticator, Okta Verify) added
+
 ## [0.0.10] - 2020-09-21
 
 ### Added
