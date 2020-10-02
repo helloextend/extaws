@@ -108,25 +108,52 @@ export class ExtAws {
           }))
           spinner?.start('Logging in...')
         }
-        do {
-          verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken}, totpPrompt)
-          if (!('status' in verify)) {
-            throw new Error(verify.message)
-          }
-          if (verify.status !== 'SUCCESS') await sleep(1000)
-          if (counter > 30) {
-            console.log('Timing out after thirty seconds')
-            console.log(`Auth State: ${verify.status}`)
-            process.exit(1)
-          }
-          counter++
-        } while(verify.status !== 'SUCCESS' && verify.stateToken)
+        if ( type === 'sms') {
+          do {
+            verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken}, totpPrompt)
 
-        if (!verify.sessionToken) {
-          throw new Error('No session token in response')
+            spinner?.stop()
+            ;({ totpPrompt } = await ExtAws.inquire({
+              name: 'totpPrompt',
+              type: 'input',
+              message: 'SMS Code:',
+            }))
+            spinner?.start('Logging in...')
+
+            verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken}, totpPrompt)
+            if (!('status' in verify)) {
+              spinner?.stop()
+              throw new Error(verify.message)
+            }
+
+          } while(verify.status !== 'SUCCESS' && verify.stateToken)
+
+          if (!verify.sessionToken) {
+            throw new Error('No session token in response')
+          }
+          this.sessionToken = verify.sessionToken
+
+        } else {
+          do {
+            verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken}, totpPrompt)
+            if (!('status' in verify)) {
+              spinner?.stop()
+              throw new Error(verify.message)
+            }
+            if (verify.status !== 'SUCCESS') await sleep(1000 * counter * counter)
+            if (counter > 30) {
+              console.log('Timing out after thirty seconds')
+              console.log(`Auth State: ${verify.status}`)
+              process.exit(1)
+            }
+            counter++
+          } while(verify.status !== 'SUCCESS' && verify.stateToken)
+
+          if (!verify.sessionToken) {
+            throw new Error('No session token in response')
+          }
+          this.sessionToken = verify.sessionToken
         }
-
-        this.sessionToken = verify.sessionToken
 
       } else {
         throw new Error('Unable to find factors in auth response')
@@ -266,6 +293,8 @@ export class ExtAws {
       } else {
         duration = inputDuration
       }
+
+      if (duration > 43200) duration = 43200
 
       let awsRegion: string
       if (!inputAwsRegion) {

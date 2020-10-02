@@ -33,7 +33,7 @@ export interface ExtAwsUserConfig {
   }
 }
 
-export type FactorDevice = 'token:software:totp' | 'push'
+export type FactorDevice = 'token:software:totp' | 'push' | 'sms'
 
 export type FactorSelect = {
     factor: string,

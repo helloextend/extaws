@@ -8,7 +8,7 @@
   ],
   "types": "dist/index.d.ts",
   "bin": {
-    "extaws": "dist/lib/extaws.js"
+    "extaws": "dist/lib/extaws-cli.js"
   },
   "repository": "git@github.com:helloextend/extaws.git",
   "author": "Corey Ryan <corey@extend.com>",
