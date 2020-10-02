@@ -4,6 +4,16 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
+## [0.0.13] - 2020-10-2
+
+### Added
+
+- SMS MFA support
+
+### Fixed
+
+- Corrected bin path when installing as a package
+
 ## [0.0.12] - 2020-09-23
 
 - Fix yarn.lock registry references
