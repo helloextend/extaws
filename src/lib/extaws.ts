@@ -361,7 +361,7 @@ export class ExtAws {
      * Main method for logging a user into AWS via Okta. Will log a user in and write credentials to aws profile
      * @returns AWS Credentials
      */
-    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }, inputSpinner?: Ora): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
+    async login(props?: { profile?: string, duration?: number, region?: string, role?: string, team?: string, }, inputSpinner?: Ora): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
       const configResult = await ExtAws.getConfig()
       if (configResult === null ) {
         throw new Error('Missing configuration. Please `init`')
@@ -420,7 +420,10 @@ export class ExtAws {
       if (props?.role)  {
         const needle = props.role
         const searchResult = roles.filter(stsRole => {
-          return (~stsRole.role.indexOf(needle))
+          if(props?.team)
+            return (~stsRole.role.indexOf(needle))&&(~stsRole.role.indexOf(props.team))
+          else
+            return (~stsRole.role.indexOf(needle))
         })[0]
         if (searchResult !== undefined) {
           userRole = searchResult
