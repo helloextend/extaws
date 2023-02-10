@@ -168,7 +168,6 @@ export class ExtAws {
      * @returns The selected role
      */
     private static async selectRole(roles: STSAssumeRole[]): Promise<STSAssumeRole> {
-      if (roles.length === 1) return roles[0]
       const roleList = roles.map( (role, index) => {
         const roleName = role.role.split('/')
         return { name: roleName[roleName.length -1], value: index}
@@ -176,7 +175,7 @@ export class ExtAws {
       const { role } = await ExtAws.inquire<{role: number}>([{
         name: 'role',
         type: 'list',
-        message: 'Please select the role to assume',
+        message: 'Available roles:',
         choices: roleList,
       }])
       return roles[role]
@@ -425,8 +424,7 @@ export class ExtAws {
         if (searchResult !== undefined) {
           userRole = searchResult
         } else {
-          spinner.text = `Provided role(${props.role}) was not found. Please select from roles found`
-          spinner.stop()
+          spinner.fail(`You do not have authorization to assume role (${props.role}). Please select from roles found`)
           userRole = await ExtAws.selectRole(roles)
           spinner.start('Logging in...')
         }
