@@ -4,6 +4,10 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
+## [0.0.14] - 2023-03-7
+
+- Added SAML check for AWS login to see if you're actually getting something back.
+
 ## [0.0.13] - 2020-10-2
 
 ### Added

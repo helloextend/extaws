@@ -588,6 +588,10 @@ export class ExtAws {
           console.error('Error: ' + err)
         } else {
           const samlObject = soup.select(dom, '#appForm')
+          if (samlObject.length == 0) {
+            console.error("SAML Object is empty. There are no valid roles for assertion.")
+            throw err
+        }
           rawAssertion = samlObject[0].children[1].attribs.value
         }
       })
