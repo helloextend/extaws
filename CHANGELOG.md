@@ -4,6 +4,11 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
+## [0.0.16] - 2023-03-8
+
+- Messed up the version and fixing that right now.
+- Fixed an issue with the exception catching for SAML.
+
 ## [0.0.14] - 2023-03-7
 
 - Added SAML check for AWS login to see if you're actually getting something back.
