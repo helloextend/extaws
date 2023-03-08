@@ -1,6 +1,6 @@
 {
   "name": "extaws",
-  "version": "0.0.15",
+  "version": "0.0.16-1",
   "description": "Extend Okta Aws Authentication",
   "main": "dist/index.js",
   "files": [
