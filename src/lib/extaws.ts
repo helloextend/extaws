@@ -586,7 +586,7 @@ export class ExtAws {
       const handler = new htmlparser.DefaultHandler(function(err, dom) {
         const samlObject = soup.select(dom, '#appForm')
         if (samlObject.length == 0) {
-            throw new Error("SAML Object is empty. There are no valid roles for assertion.");
+            throw new Error("SAML Object is empty. There are no valid roles for assertion.")
         }
         rawAssertion = samlObject[0].children[1].attribs.value
       })
