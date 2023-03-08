@@ -36,7 +36,7 @@
     "@types/shelljs": "^0.8.8",
     "@types/tough-cookie": "^4.0.0",
     "aws-sdk": "^2.751.0",
-    "axios": "^0.20.0",
+    "axios": "^0.21.2",
     "axios-cookiejar-support": "^1.0.0",
     "color": "^3.1.2",
     "commander": "^6.1.0",
