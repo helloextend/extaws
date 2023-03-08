@@ -4,12 +4,7 @@ This file is used to track notable changes to the codebase
 
 ## [Unreleased]
 
-## [0.0.16] - 2023-03-8
-
-- Messed up the version and fixing that right now.
-- Fixed an issue with the exception catching for SAML.
-
-## [0.0.14] - 2023-03-7
+## [0.0.14] - 2023-03-8
 
 - Added SAML check for AWS login to see if you're actually getting something back.
 
@@ -41,7 +36,7 @@ This file is used to track notable changes to the codebase
 
 ## [0.0.8] - 2020-09-17
 
-### Added 
+### Added
 
 - Added the ability to pass a role to the login CLI command
 - Improvements to the overall flow to setting config
@@ -56,7 +51,7 @@ This file is used to track notable changes to the codebase
 
 ### Changed
 
-- Changed code organization so index.js properly contains only exports 
+- Changed code organization so index.js properly contains only exports
 - Updated promptForConfig() to accept all options as function parameters. It will also now ask only for items not passed in those parameters.
 - Updated getConfig() to be static. Should have already been.
 - login() now accepts profile, duration, region, and role as parameters. This allows for:
