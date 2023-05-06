@@ -39,7 +39,7 @@ export const parseAWSIni = (): AwsCredsAndConfig => {
   try {
     configIni = parse(readFileSync(AWS_CONFIG_FILE, {encoding: 'utf-8', flag: 'a+'}))
     credsIni = parse(readFileSync(AWS_CREDS_FILE, {encoding: 'utf-8', flag: 'a+'}))
-  } catch (err) {
+  } catch (err: any) {
     if (err.code !== 'ENOENT') {
       throw new Error(err)
     }

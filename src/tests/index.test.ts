@@ -331,7 +331,14 @@ describe('ExtAws', () => {
   let auth: ExtAws
   beforeEach(async () => {
     auth = new ExtAws()
-  })
+    auth.config = {
+      defaultProfile: 'default',
+      duration: 3600,
+      awsRegion: 'us-east-1',
+      extaws: { oktaOrgName: 'oktaorg', oktaSamlUrl: 'asdf',  saveCreds: true }, } 
+  }
+  )
+
 
   afterEach(() => {
     jest.clearAllMocks()
@@ -350,7 +357,7 @@ describe('ExtAws', () => {
 
   test( 'function selectToken returns the factor when only one provided', async () => {
     const factor = await (ExtAws as any).selectToken([factor1])
-    expect(factor).toBe('aaaaabbbbbccccc')
+    expect(factor).toStrictEqual({'factor': 'aaaaabbbbbccccc', 'type': 'push'})
   })
 
   test( 'properly handles MFA', async() => {

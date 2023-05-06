@@ -101,7 +101,7 @@ export class ExtAws {
           spinner?.start('Polling for push verification...')
         } else if ( type === 'token:software:totp' ) {
           spinner?.stop()
-          ;({ totpPrompt } = await ExtAws.inquire({
+          ;({ totpPrompt } = await ExtAws.inquire<{ totpPrompt: string }>({
             name: 'totpPrompt',
             type: 'input',
             message: 'OTP Code:',
@@ -113,7 +113,7 @@ export class ExtAws {
             verify = await this.verifyFactor({ id: factor, stateToken: authResponse.stateToken}, totpPrompt)
 
             spinner?.stop()
-            ;({ totpPrompt } = await ExtAws.inquire({
+            ;({ totpPrompt } = await ExtAws.inquire<{ totpPrompt: string }>({
               name: 'totpPrompt',
               type: 'input',
               message: 'SMS Code:',
@@ -233,7 +233,7 @@ export class ExtAws {
     ): Promise<ExtAwsUserConfig> {
       let oktaOrgName: string
       if (!inputOktaOrgName) {
-        const { promptOktaOrgName } = await ExtAws.inquire({
+        const { promptOktaOrgName } = await ExtAws.inquire<{ promptOktaOrgName: string }>({
           name: 'promptOktaOrgName',
           type: 'input',
           message: 'Okta Organization Name:',
@@ -245,7 +245,7 @@ export class ExtAws {
 
       let oktaSamlUrl: string
       if (!inputOktaSamlUrl) {
-        const { promptOktaSamlUrl } = await ExtAws.inquire({
+        const { promptOktaSamlUrl } = await ExtAws.inquire<{ promptOktaSamlUrl: string }>({
           name: 'promptOktaSamlUrl',
           type: 'input',
           message: 'Okta SAML Url:',
@@ -257,7 +257,7 @@ export class ExtAws {
 
       let saveCreds: boolean
       if (!inputSaveCreds) {
-        const { promptSaveCreds } = await ExtAws.inquire({
+        const { promptSaveCreds } = await ExtAws.inquire<{ promptSaveCreds: boolean }>({
           name: 'promptSaveCreds',
           type: 'confirm',
           message: 'Store Okta Credentials'
@@ -269,7 +269,7 @@ export class ExtAws {
 
       let defaultProfile: string
       if (!inputDefaultProfile) {
-        const { promptDefaultProfile } = await ExtAws.inquire({
+        const { promptDefaultProfile } = await ExtAws.inquire<{ promptDefaultProfile: string }>({
           name: 'promptDefaultProfile',
           type: 'input',
           message: 'AWS Profile to store credentials:',
@@ -282,7 +282,7 @@ export class ExtAws {
 
       let duration: number
       if (!inputDuration) {
-        const { promptDuration } = await ExtAws.inquire({
+        const { promptDuration } = await ExtAws.inquire<{ promptDuration: number }>({
           name: 'promptDuration',
           type: 'number',
           message: 'Default credential duration (in seconds):',
@@ -297,7 +297,7 @@ export class ExtAws {
 
       let awsRegion: string
       if (!inputAwsRegion) {
-        const { promptAwsRegion } = await ExtAws.inquire({
+        const { promptAwsRegion } = await ExtAws.inquire<{ promptAwsRegion: string }>({
           name: 'promptAwsRegion',
           type: 'input',
           message: 'AWS Region:',
@@ -491,7 +491,7 @@ export class ExtAws {
       try {
         const response = await this.client.post<OktaAuthResponse>('/api/v1/authn', params)
         return response.data
-      } catch (err) {
+      } catch (err: any) {
         if (err && err.response) {
           return err as AxiosError
         }
@@ -512,7 +512,7 @@ export class ExtAws {
           `/api/v1/authn/factors/${factor.id}/verify`,
           { passCode: mfaCode, stateToken: factor.stateToken })
         return res.data
-      } catch (err) {
+      } catch (err: any) {
         if (err && err.response) {
           return err as AxiosError
         }
@@ -531,7 +531,7 @@ export class ExtAws {
             redirectUrl: `https://${this.config.extaws.oktaOrgName}.okta.com${this.config.extaws.oktaSamlUrl}`
           }}
         )
-      } catch (err) {
+      } catch (err: any) {
         if (err && err.response) {
           return err as AxiosError
         }
@@ -550,7 +550,7 @@ export class ExtAws {
         const res = await this.client.get<string>(samlUrl)
         this.httpAssertion = res.data
         return res.data
-      } catch (err) {
+      } catch (err: any) {
         if (err && err.response) {
           return err as AxiosError
         }
