@@ -581,14 +581,14 @@ export class ExtAws {
      */
     private async parseAssertionFromHtml(): Promise<void> {
       let rawAssertion = ''
-      const handler = new htmlparser.DefaultHandler(function(err: Error | null, dom: unknown) {
-        if (err) {
-          console.error('Error: ' + err)
-        } else {
-          const samlObject = soup.select(dom, '#appForm')
-          rawAssertion = samlObject[0].children[1].attribs.value
+      const handler = new htmlparser.DefaultHandler(function(err, dom) {
+        const samlObject = soup.select(dom, '#appForm')
+        if (samlObject.length == 0) {
+          throw new Error(`SAML Object is empty. There are no valid roles for assertion. \nError Message: ${err}`)
         }
+        rawAssertion = samlObject[0].children[1].attribs.value
       })
+
       const parser = new htmlparser.Parser(handler)
       parser.parseComplete(this.httpAssertion)
 
