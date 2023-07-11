@@ -1,6 +1,6 @@
 {
   "name": "extaws",
-  "version": "0.0.14",
+  "version": "0.1.0",
   "description": "Extend Okta Aws Authentication",
   "main": "dist/index.js",
   "files": [
@@ -10,7 +10,7 @@
   "bin": {
     "extaws": "dist/lib/extaws-cli.js"
   },
-  "repository": "git@github.com:helloextend/extaws.git",
+  "repository": "git@github.com:hell@aws-sdk/client-stsoextend/extaws.git",
   "author": "Corey Ryan <corey@extend.com>",
   "license": "MIT",
   "scripts": {
@@ -35,7 +35,7 @@
     "@types/node": "^14.11.1",
     "@types/shelljs": "^0.8.8",
     "@types/tough-cookie": "^4.0.0",
-    "aws-sdk": "^2.751.0",
+    "@aws-sdk/client-sts": "^3.369.0",
     "axios": "^0.20.0",
     "axios-cookiejar-support": "^1.0.0",
     "color": "^3.1.2",

@@ -2,7 +2,7 @@ import axios, {AxiosError, AxiosInstance, AxiosResponse} from 'axios'
 import {CookieJar} from 'tough-cookie'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
 import * as htmlparser from 'htmlparser2'
-import {STS} from 'aws-sdk'
+import { STSClient, AssumeRoleWithSAMLResponse, AssumeRoleWithSAMLCommand } from '@aws-sdk/client-sts'
 import * as et from 'elementtree'
 import * as soup from './soup'
 import {sleep, writeAwsCredentials, forwardSlashRegEx, writeAwsConfig} from './util'
@@ -31,7 +31,6 @@ export class ExtAws {
     rawAssertion: string
     document: et.ElementTree
     client: AxiosInstance
-    sts: STS
     sessionToken: string
     config: ExtAwsUserConfig
 
@@ -41,7 +40,6 @@ export class ExtAws {
       this.b64Assertion = ''
       this.document = {} as et.ElementTree
       this.rawAssertion = ''
-      this.sts = new STS()
       this.sessionToken = ''
       this.client = {} as AxiosInstance
       this.config = {} as ExtAwsUserConfig
@@ -360,7 +358,7 @@ export class ExtAws {
      * Main method for logging a user into AWS via Okta. Will log a user in and write credentials to aws profile
      * @returns AWS Credentials
      */
-    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }, inputSpinner?: Ora): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
+    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }, inputSpinner?: Ora): Promise<AssumeRoleWithSAMLResponse> {
       const configResult = await ExtAws.getConfig()
       if (configResult === null ) {
         throw new Error('Missing configuration. Please `init`')
@@ -630,13 +628,15 @@ export class ExtAws {
      *
      * @returns AWS Credentials
      */
-    private async assumeRole(role: STSAssumeRole, duration?: number): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
-      return await this.sts.assumeRoleWithSAML({
+    private async assumeRole(role: STSAssumeRole, duration?: number): Promise<AssumeRoleWithSAMLResponse> {
+      const stsClient = new STSClient({})
+      const assumeRoleSAMLCmd = new AssumeRoleWithSAMLCommand({
         PrincipalArn: role.principal,
         RoleArn: role.role,
         SAMLAssertion: this.b64Assertion,
         DurationSeconds: duration || 43200,
-      }).promise()
+      })
+      return await stsClient.send(assumeRoleSAMLCmd)
     }
 
     /**
