@@ -2,7 +2,7 @@ import axios, {AxiosError, AxiosInstance, AxiosResponse} from 'axios'
 import {CookieJar} from 'tough-cookie'
 import axiosCookieJarSupport from 'axios-cookiejar-support'
 import * as htmlparser from 'htmlparser2'
-import {STS} from 'aws-sdk'
+import {STS, AssumeRoleWithSAMLResponse} from '@aws-sdk/client-sts'
 import * as et from 'elementtree'
 import * as soup from './soup'
 import {sleep, writeAwsCredentials, forwardSlashRegEx, writeAwsConfig} from './util'
@@ -343,10 +343,10 @@ export class ExtAws {
     /**
     * Creates and configures the Axios client. Also attaches the necessary coookie jar for session management
     */
-    createAxiosClient(): void {
+    createAxiosClient(oktaOrgName?: string): void {
       this.client = axios.create({
         withCredentials: true,
-        baseURL: `https://${this.config.extaws.oktaOrgName}.okta.com`,
+        baseURL: `https://${oktaOrgName || this.config.extaws.oktaOrgName}.okta.com`,
         headers: {
           'Content-Type': 'application/json'
         }
@@ -360,7 +360,7 @@ export class ExtAws {
      * Main method for logging a user into AWS via Okta. Will log a user in and write credentials to aws profile
      * @returns AWS Credentials
      */
-    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }, inputSpinner?: Ora): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
+    async login(props?: { profile?: string, duration?: number, region?: string, role?: string }, inputSpinner?: Ora): Promise<AssumeRoleWithSAMLResponse> {
       const configResult = await ExtAws.getConfig()
       if (configResult === null ) {
         throw new Error('Missing configuration. Please `init`')
@@ -630,13 +630,13 @@ export class ExtAws {
      *
      * @returns AWS Credentials
      */
-    private async assumeRole(role: STSAssumeRole, duration?: number): Promise<STS.Types.AssumeRoleWithSAMLResponse> {
+    private async assumeRole(role: STSAssumeRole, duration?: number): Promise<AssumeRoleWithSAMLResponse> {
       return await this.sts.assumeRoleWithSAML({
         PrincipalArn: role.principal,
         RoleArn: role.role,
         SAMLAssertion: this.b64Assertion,
         DurationSeconds: duration || 43200,
-      }).promise()
+      })
     }
 
     /**

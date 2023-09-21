@@ -339,18 +339,18 @@ describe('ExtAws', () => {
 
   describe( 'axios client', () => {
     test('properly sets withCredentials', () => {
-      auth.createAxiosClient()
+      auth.createAxiosClient('fake-org-name')
       expect(auth.client.defaults.withCredentials).toBe(true)
     })
     test('has a cookie jar', () => {
-      auth.createAxiosClient()
+      auth.createAxiosClient('fake-org-name')
       expect(auth.client.defaults.jar).toBeInstanceOf(CookieJar)
     })
   })
 
   test( 'function selectToken returns the factor when only one provided', async () => {
     const factor = await (ExtAws as any).selectToken([factor1])
-    expect(factor).toBe('aaaaabbbbbccccc')
+    expect(factor).toMatchObject({factor: 'aaaaabbbbbccccc', type: 'push'})
   })
 
   test( 'properly handles MFA', async() => {

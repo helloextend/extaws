@@ -1,7 +1,7 @@
 import {existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs'
 import { parse, encode } from 'ini'
 import {homedir} from 'os'
-import { STS } from 'aws-sdk'
+import type { Credentials } from '@aws-sdk/client-sts'
 
 export const forwardSlashRegEx = /^([^/])/i
 
@@ -81,7 +81,7 @@ export const writeAwsConfig = (
 
 export const writeAwsCredentials = (
   profile: string,
-  creds: STS.Types.Credentials,
+  creds: Credentials,
 ): void => {
   const { credsIni } = parseAWSIni()
   credsIni[profile] = {
